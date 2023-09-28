@@ -1,6 +1,6 @@
 import { UseQueryResponse, gql, useQuery } from "urql";
 import { Card, SimpleGrid, Heading, Box, Text } from "@chakra-ui/react";
-import { Link, Router } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const query = gql`
   query Home {
@@ -33,7 +33,7 @@ const HomePage = () => {
       {data.data ? (
         <SimpleGrid columns={[2, null, 3]} spacing={10} width={"100%"}>
           {data.data.allPeople.edges.map((char: any) => (
-            <Link key={char.node.id} to={`/person/:${char.node.id}`}>
+            <Link key={char.node.id} to={`/person/${char.node.id}`}>
               <Card
                 height={"100px"}
                 cursor={"pointer"}
