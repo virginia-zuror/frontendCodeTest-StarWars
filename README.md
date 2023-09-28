@@ -37,28 +37,4 @@ This page should contain overview of the player
 
 ![person](./docs/person.png)
 
-## Setup
 
-Install dependencies (using NPM)
-
-```bash
-$ npm run install
-```
-
-Download GraphQL Schema
-
-```bash
-$ npm run download-schema
-```
-
-Generate GraphQL Types (generated types will be in `src/generated/graphql.ts`
-
-```bash
-$ npm run codegen
-```
-
-Start dev mode
-
-```bash
-$ npm run dev
-```
