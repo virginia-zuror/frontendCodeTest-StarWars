@@ -1,0 +1,15 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap');
+
+
+#root{
+    font-family: 'Montserrat', sans-serif;
+    background: rgb(2,0,36);
+background: linear-gradient(180deg, rgb(0, 0, 0) 0%, rgb(32, 32, 68) 28%, rgb(5, 10, 11) 100%);
+}
+
+#root .card{
+    background: rgba(255, 255, 255, 0.587);
+    border-radius: 10px;
+    color: rgb(2,0,36);
+}
