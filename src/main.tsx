@@ -1,4 +1,5 @@
 import React from "react";
+import './main.css';
 import ReactDOM from "react-dom/client";
 import { Provider } from "urql";
 import { createClient } from "urql";
@@ -6,7 +7,6 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import PersonPage from "./pages/PersonPage";
 import HomePage from "./pages/HomePage";
 import { ChakraProvider } from '@chakra-ui/react'
-
 
 const client = createClient({
   url: "https://swapi-graphql.netlify.app/.netlify/functions/index",

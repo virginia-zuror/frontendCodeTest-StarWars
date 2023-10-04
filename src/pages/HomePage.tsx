@@ -15,6 +15,8 @@ const query = gql`
   }
 `;
 
+
+
 const HomePage = () => {
   const [data]: UseQueryResponse = useQuery({ query });
 
@@ -28,14 +30,15 @@ const HomePage = () => {
       alignItems={"center"}
       justifyContent={"center"}
     >
-      <Heading>Welcome to Star Wars Database</Heading>
+      <Heading color={'#ECECEC'} mt={10}>Welcome to Star Wars Database</Heading>
 
       {data.data ? (
-        <SimpleGrid columns={[2, null, 3]} spacing={10} width={"100%"}>
+        <SimpleGrid columns={[2, 3, 4]} spacing={10} width={"100%"} padding={10}>
           {data.data.allPeople.edges.map((char: any) => (
             <Link key={char.node.id} to={`/person/${char.node.id}`}>
               <Card
-                height={"100px"}
+              className="card"
+                height={"150px"}
                 cursor={"pointer"}
                 display={"flex"}
                 textAlign={"center"}

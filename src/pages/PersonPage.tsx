@@ -1,11 +1,14 @@
-import { Box, Button, Card, SkipNavLink, Text } from "@chakra-ui/react";
-import { format } from "date-fns";
+import { Box, Button, Card, Text } from "@chakra-ui/react";
+import pl from "date-fns/esm/locale/pl/index.js";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { gql, stringifyVariables, useQuery } from "urql";
+import { UseQueryResponse, gql, stringifyVariables, useQuery } from "urql";
 
 const PersonPage = () => {
   const id = useParams();
+
+  const [currentPage, setCurrentPage] = useState(1);
+
   const query = gql`
     query currentPerson($personId: ID) {
       person(id: $personId) {
@@ -13,80 +16,90 @@ const PersonPage = () => {
         name
         birthYear
         eyeColor
-        filmConnection {
-          edges {
-            node {
-              producers
-              id
-              releaseDate
-              title
-              planetConnection {
-                edges {
-                  node {
-                    id
-                    name
-                    surfaceWater
-                  }
-                }
-              }
-            }
-          }
-        }
         species {
           averageHeight
           name
           id
         }
+        filmConnection {
+          films {
+            id
+            planetConnection {
+              planets {
+                id
+                name
+                surfaceWater
+              }
+            }
+            producers
+            releaseDate
+            title
+          }
+          totalCount
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+          edges {
+            cursor
+          }
+        }
       }
     }
   `;
+
   const variables = {
     personId: stringifyVariables(id),
   };
 
-  const data = useQuery({ query, variables });
+  const [film, setFilm] = useState<any>([]);
+  const data: UseQueryResponse = useQuery({ query, variables });
   const [personResult, setPersonResult] = useState<any>();
-  const [films, setFilms] = useState<any>([]);
-  const [filmInView, setFilmInView] = useState(0);
   const [numberPlanets, setNumberPlanets] = useState<number>(0);
+  const [totalCount, setTotalCount] = useState(0);
+  const [producers, setProducers] = useState([])
 
   useEffect(() => {
     setPersonResult(data[0].data?.person);
   }, [data[0].data?.person]);
 
   useEffect(() => {
-    if (personResult) {
-      setFilms(personResult.filmConnection.edges);
-    }
+    setTotalCount(personResult?.filmConnection?.totalCount);
   }, [personResult?.id]);
 
-  const showNextFilm = () => {
-    if (films.length - 1 > filmInView) {
-      setFilmInView(filmInView + 1);
-    } else if (films.length - 1 === filmInView) {
-      null;
-    }
-  };
-
-  const showPrevtFilm = () => {
-    if (filmInView > 0) {
-      setFilmInView(filmInView - 1);
-    } else if (filmInView === 0) {
-      null;
-    }
-  };
+  useEffect(() => {
+    setFilm(personResult?.filmConnection?.films[currentPage - 1]);
+  }, [personResult?.id, currentPage]);
 
   useEffect(() => {
     setNumberPlanets(0);
 
-    films[filmInView]?.node.planetConnection.edges.map(
-      (planet: any) =>
-        planet.node.surfaceWater === 0 && setNumberPlanets(numberPlanets + 1)
-    );
-  }, [filmInView]);
+    let planetsWithoutWater = 0;
+    film.planetConnection?.planets.map((planet: any) => {
+      if (planet.surfaceWater === 0) {
+        planetsWithoutWater++;
+      }
+    });
 
-  console.log({ personResult });
-  console.log(films);
+    setNumberPlanets(planetsWithoutWater);
+  }, [film?.planetConnection, currentPage]);
+
+
+  useEffect(()=>{
+    let producersArray:String[]=[]
+    personResult?.filmConnection?.films.map((film:any)=>{
+      film.producers.map((producer:String)=>{
+        producersArray.push(producer)
+      })
+    })
+
+    producersArray.forEach(element => {
+      /* pasar por cada elemento contabilizando las veces que se repite, retornar un objeto? */
+    });
+
+console.log(producersArray);
+
+  },[personResult?.id])
 
   return (
     <Box
@@ -95,23 +108,40 @@ const PersonPage = () => {
       alignItems={"center"}
       justifyContent={"center"}
       width={"100%"}
+      height={"100vh"}
       padding={20}
     >
-      <Link to="/" style={{ position: "fixed", top: 10, left: 10 }}>
-        <Text as={'h1'} width={100}>Back to All Characters</Text>
+      <Link
+        to="/"
+        style={{
+          position: "fixed",
+          top: 20,
+          left: 20,
+          background: "#ECECEC",
+          borderRadius: "4px",
+        }}
+      >
+        <Text as={"h1"} width={100} fontSize={"l"} textAlign={"center"}>
+          Back to All Characters
+        </Text>
       </Link>
       {personResult ? (
         <Card
+          className="card"
           width={500}
           display={"flex"}
           flexDirection={"column"}
           alignItems={"center"}
           justifyContent={"center"}
           padding={10}
-          backgroundColor={"#ad6814"}
         >
-          <h1>{personResult.name}</h1>
-          <h4>Producers: </h4>
+          <Text fontWeight={600} textTransform={"uppercase"}>
+            {personResult.name}
+          </Text>
+          <Box>
+            <Text>Producers: </Text>
+            <Text>{}</Text>
+          </Box>
 
           <h4>Species: {personResult.species?.name || "Human"}</h4>
           {personResult.species && (
@@ -120,14 +150,14 @@ const PersonPage = () => {
           <h4>Films:</h4>
           <Box
             width={"350px"}
-            height={"350px"}
-            padding={0}
+            height={"360px"}
+            padding={2}
             display={"flex"}
             flexDirection={"column"}
             alignItems={"center"}
             justifyContent={"flex-start"}
             gap={2}
-            backgroundColor={"#6a4646"}
+            border={"2px solid #6a4646"}
             borderRadius={"4px"}
           >
             <Box width={"350px"} height={"300px"} display={"flex"}>
@@ -144,19 +174,19 @@ const PersonPage = () => {
               >
                 <Box width={"100%"}>
                   <Text
+                    position={"relative"}
+                    top={"-15px"}
                     textAlign={"center"}
-                    fontWeight={400}
+                    fontWeight={500}
                     textTransform={"uppercase"}
                   >
-                    {films[filmInView]?.node.title}
+                    {film?.title}
                   </Text>
                 </Box>
-                <Box>
+                <Box display={"flex"} gap={3}>
                   Realease date:{" "}
-                  <Text>
-                    {new Date(
-                      films[filmInView]?.node.releaseDate
-                    ).toDateString()}
+                  <Text fontWeight={400}>
+                    {new Date(film?.releaseDate).toDateString()}
                   </Text>
                 </Box>
                 <Box>
@@ -172,10 +202,20 @@ const PersonPage = () => {
               width={"100%"}
               padding={10}
             >
-              <Button onClick={showPrevtFilm} width={100} background={'#fff'} border={'none'}>
+              <Button
+                onClick={() => setCurrentPage(currentPage - 1)}
+                isDisabled={currentPage === 1}
+                width={100}
+                sx={{ backgroundColor: "#E5C160" }}
+              >
                 Prev
               </Button>
-              <Button onClick={showNextFilm} width={100} background={'#fff'} border={'none'}>
+              <Button
+                onClick={() => setCurrentPage(currentPage + 1)}
+                isDisabled={totalCount === currentPage}
+                width={100}
+                sx={{ backgroundColor: "#E5C160" }}
+              >
                 Next
               </Button>
             </Box>
