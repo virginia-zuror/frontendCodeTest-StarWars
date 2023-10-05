@@ -57,7 +57,8 @@ const PersonPage = () => {
   const [personResult, setPersonResult] = useState<any>();
   const [numberPlanets, setNumberPlanets] = useState<number>(0);
   const [totalCount, setTotalCount] = useState(0);
-  const [producers, setProducers] = useState([])
+  const [producers, setProducers] = useState([]);
+  const [producersCounter, setProducersCounter] = useState<Object>({String: Number});
 
   useEffect(() => {
     setPersonResult(data[0].data?.person);
@@ -84,22 +85,26 @@ const PersonPage = () => {
     setNumberPlanets(planetsWithoutWater);
   }, [film?.planetConnection, currentPage]);
 
+  const producersList = () => {
 
-  useEffect(()=>{
-    let producersArray:String[]=[]
-    personResult?.filmConnection?.films.map((film:any)=>{
-      film.producers.map((producer:String)=>{
-        producersArray.push(producer)
-      })
-    })
-
-    producersArray.forEach(element => {
-      /* pasar por cada elemento contabilizando las veces que se repite, retornar un objeto? */
+    let producersArray: String[] = [];
+    personResult?.filmConnection?.films.map((film: any) => {
+      film.producers.map((producer: String) => {
+        producersArray.push(producer);
+      });
     });
 
-console.log(producersArray);
+    setProducersCounter(
+      producersArray.reduce((countProducer, producerName:String) => {
+        countProducer[producerName] = (countProducer[producerName] || 0) + 1;
+        return countProducer;
+      }, {})
+    );
+  };
 
-  },[personResult?.id])
+  useEffect(() => {
+    producersList();
+  }, [personResult?.id]);
 
   return (
     <Box
@@ -138,16 +143,22 @@ console.log(producersArray);
           <Text fontWeight={600} textTransform={"uppercase"}>
             {personResult.name}
           </Text>
-          <Box>
-            <Text>Producers: </Text>
-            <Text>{}</Text>
-          </Box>
+          <Box width={'100%'}>
+            <Text fontWeight={500} >Producers: </Text>
 
-          <h4>Species: {personResult.species?.name || "Human"}</h4>
+            {Object.entries(producersCounter).map(([name, value]) => (
+              <Text key={name}>
+                {name}: {value} {value===1 ? 'time' : 'times'}.
+              </Text>
+            ))}
+          
+
+          <Text fontWeight={500} mt={2}>Species: {personResult.species?.name || "Human"}</Text>
           {personResult.species && (
-            <h4>Average Height: {personResult.species.averageHeight} cm</h4>
+            <Text fontWeight={500}>Average Height: {personResult.species.averageHeight} cm</Text>
           )}
-          <h4>Films:</h4>
+          </Box>
+          <Text fontWeight={600}>Films:</Text>
           <Box
             width={"350px"}
             height={"360px"}
